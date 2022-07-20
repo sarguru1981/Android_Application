@@ -1,6 +1,6 @@
 # Android-Assignment
 
-A simple User List app to showcase Kotlin, Clean architecture, MVVM, Hilt, Coroutines, Flow, Jetpack compose, Room, Retrofit and Unit test.
+Sample application to demonstrate Multi-module Clean MVVM Architecture and usage of Dagger Hilt, Kotlin Coroutines &amp; Flow, Jetpack compose, Room, Retrofit, Paging, Navigation Graph, Unit tests
 
 ## Clean Architecture
 
