@@ -1,13 +1,19 @@
 package com.poc.presentation
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import com.anushka.tmdbclient.data.repository.movie.datasourceImpl.PostDetailRemoteDataSourceImpl
 import com.poc.common.Constant
 import com.poc.data.ApiService
 import com.poc.data.network.model.OwnerDTO
 import com.poc.data.network.model.PostDTO
 import com.poc.data.network.repository.postdetail.GetPostDetailRepositoryImpl
-import com.poc.data.network.repository.user.GetUsersRepositoryImpl
+import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailCacheDataSourceImpl
+import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailLocalDataSourceImpl
 import com.poc.data.network.utils.SafeApiRequest
+import com.poc.data.room.post.PostDatabase
+import com.poc.domain.repository.GetPostDetailRepository
 import com.poc.domain.usecase.GetPostDetailUseCase
 import com.poc.presentation.postdetail.PostDetailState
 import com.poc.presentation.postdetail.PostDetailsViewModel
@@ -27,7 +33,7 @@ class PostDetailViewModelTest : SafeApiRequest() {
     private lateinit var postDetailsViewModel: PostDetailsViewModel
     private lateinit var postDetailUseCase: GetPostDetailUseCase
     private var apiService = mock<ApiService>()
-
+    private lateinit var postDetailRepository: GetPostDetailRepository
 
     @get:Rule
     val testCoroutineRule = TestCoroutineRule()
@@ -35,9 +41,19 @@ class PostDetailViewModelTest : SafeApiRequest() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        //postDetailUseCase = Mockito.mock(GetPostDetailUseCase::class.java)
-        /*Mockito.`when`(postDetailUseCase.invoke("60d21b4667d0d8992e610c85"))
-            .thenReturn(emptyList())*/
+        val postDatabase = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            PostDatabase::class.java
+        ).build()
+        val postDAO = postDatabase.getPostDAO()
+        val postDetailRemoteDatasource = PostDetailRemoteDataSourceImpl(apiService, Dispatchers.IO)
+        val postDetailLocalDataSource = PostDetailLocalDataSourceImpl(postDAO)
+        val postDetailCacheDataSource = PostDetailCacheDataSourceImpl()
+        postDetailRepository = GetPostDetailRepositoryImpl(
+            postDetailRemoteDatasource,
+            postDetailLocalDataSource,
+            postDetailCacheDataSource
+        )
     }
 
     @Test
@@ -58,15 +74,14 @@ class PostDetailViewModelTest : SafeApiRequest() {
             )
         }
         postDetailUseCase =
-            GetPostDetailUseCase(GetPostDetailRepositoryImpl(apiService, Dispatchers.IO))
+            GetPostDetailUseCase(postDetailRepository)
 
         postDetailsViewModel =
             PostDetailsViewModel(
                 postDetailUseCase,
-                GetUsersUseCase(GetUsersRepositoryImpl(apiService, Dispatchers.IO)),
                 SavedStateHandle()
             )
-        Assert.assertEquals(PostDetailState.StartState, postDetailsViewModel.details.value)
+        Assert.assertNotEquals(PostDetailState.StartState, postDetailsViewModel.details.value)
     }
 
     @Test
@@ -83,13 +98,13 @@ class PostDetailViewModelTest : SafeApiRequest() {
             publishDate = "2020-05-24T14:53:17.598Z",
             owner = OwnerDTO("", "", "", "", "")
         ))
+
         postDetailUseCase =
-            GetPostDetailUseCase(GetPostDetailRepositoryImpl(apiService, Dispatchers.IO))
+            GetPostDetailUseCase(postDetailRepository)
 
         postDetailsViewModel =
             PostDetailsViewModel(
                 postDetailUseCase,
-                GetUsersUseCase(GetUsersRepositoryImpl(apiService, Dispatchers.IO)),
                 SavedStateHandle()
             )
         Assert.assertEquals(PostDetailState.StartState, postDetailsViewModel.details.value)

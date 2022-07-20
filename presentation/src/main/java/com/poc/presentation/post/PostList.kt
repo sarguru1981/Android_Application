@@ -5,18 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberImagePainter
 import com.poc.domain.model.post.Post
 import com.poc.presentation.theme.graySurface
@@ -26,15 +24,35 @@ fun PostListScreen(
     navController: NavController,
     postListViewModel: PostListViewModel = hiltViewModel()
 ) {
-    val list = postListViewModel.pager.collectAsLazyPagingItems()
+    val postState by postListViewModel.postState.collectAsState()
 
-    LazyColumn {
-        items(list.itemCount) {
-            PostItem(it = list[it]!!) {
-                navController.navigate("postdetail/${it}")
+    when (postState) {
+        is PostsState.LoadingState -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
+        is PostsState.Error -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = (postState as PostsState.Error).message,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        }
+        is PostsState.Success -> {
+            val postList = (postState as PostsState.Success).posts
 
+            if (postList != null) {
+                LazyColumn {
+                    items(postList.count()) {
+                        PostItem(it = postList[it]!!) {
+                            navController.navigate("postdetail/${it}")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -30,3 +30,14 @@ fun OwnerDTO.toDomain(): Owner {
     )
 }
 
+fun PostDTO.toDomain(): Post {
+    return Post(
+        id = id ?: "",
+        image = image ?: "",
+        likes = likes ?: 0,
+        owner = owner?.toDomain() ?: Owner("", "", "", "", ""),
+        publishDate = publishDate ?: "",
+        tags = tags ?: emptyList(),
+        text = text ?: ""
+    )
+}

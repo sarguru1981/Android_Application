@@ -4,7 +4,6 @@ import android.content.Context
 import com.anushka.tmdbclient.data.repository.movie.datasourceImpl.PostDetailRemoteDataSourceImpl
 import com.poc.common.Constant
 import com.poc.data.ApiService
-import com.poc.data.network.repository.post.GetPagerPostRepoImpl
 import com.poc.data.network.repository.post.GetPostsRepositoryImpl
 import com.poc.data.network.repository.post.datasource.PostCacheDataSource
 import com.poc.data.network.repository.post.datasource.PostLocalDataSource
@@ -20,7 +19,6 @@ import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailCache
 import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailLocalDataSourceImpl
 import com.poc.data.room.post.PostDAO
 import com.poc.data.room.post.PostDatabase
-import com.poc.domain.repository.GetPagerPostRepo
 import com.poc.domain.repository.GetPostDetailRepository
 import com.poc.domain.repository.GetPostsRepository
 import dagger.Module
@@ -50,30 +48,6 @@ class DataModule {
     }
 
     @Provides
-    fun provideGetPostsRepository(
-        apiService: ApiService,
-        ioDispatcher: CoroutineDispatcher
-    ): GetPostsRepository {
-        return GetPostsRepositoryImpl(apiService = apiService, ioDispatcher = ioDispatcher)
-    }
-
-    /*@Provides
-    fun provideGetUsersRepository(
-        apiService: ApiService,
-        ioDispatcher: CoroutineDispatcher
-    ): GetUsersRepository {
-        return GetUsersRepositoryImpl(apiService = apiService, ioDispatcher = ioDispatcher)
-    }*/
-
-   /* @Provides
-    fun provideGetPostDetailsRepo(
-        apiService: ApiService,
-        ioDispatcher: CoroutineDispatcher
-    ): GetPostDetailRepository {
-        return GetPostDetailRepositoryImpl(apiService, ioDispatcher = ioDispatcher)
-    }*/
-
-    @Provides
     fun provideDatabase(@ApplicationContext context: Context): PostDatabase {
         return PostDatabase.getInstance(context)
     }
@@ -83,11 +57,6 @@ class DataModule {
         return postDatabase.getPostDAO()
     }
 
-    /*@Provides
-    fun provideGetPagerRepo(apiService: ApiService): GetPagerPostRepo {
-        return GetPagerPostRepoImpl(apiService)
-    }*/
-
     // Injecting dispatcher makes testing easier as it can replace those dispatchers in
     // unit and instrumentation tests with a test dispatcher to make your tests more deterministic.
     @Provides
@@ -96,14 +65,18 @@ class DataModule {
     }
 
     @Provides
-    fun providePostRemoteDataSource(apiService: ApiService): PostRemoteDatasource {
-        return PostRemoteDataSourceImpl(apiService)
+    fun providePostRemoteDataSource(
+        apiService: ApiService,
+        ioDispatcher: CoroutineDispatcher
+    ): PostRemoteDatasource {
+        return PostRemoteDataSourceImpl(apiService, ioDispatcher)
     }
 
     @Provides
     fun providePostLocalDataSource(postDAO: PostDAO): PostLocalDataSource {
         return PostLocalDataSourceImpl(postDAO)
     }
+
     @Provides
     fun providePostCacheDataSource(): PostCacheDataSource {
         return PostCacheDataSourceImpl()
@@ -111,15 +84,12 @@ class DataModule {
 
     @Provides
     fun provideGetPostListRepository(
-        postRemoteDatasource: PostRemoteDatasource,
-        postLocalDataSource: PostLocalDataSource,
-        postCacheDataSource: PostCacheDataSource
-    ): GetPagerPostRepo {
+        apiService: ApiService,
+        ioDispatcher: CoroutineDispatcher
+    ): GetPostsRepository {
 
-        return GetPagerPostRepoImpl(
-            postRemoteDatasource,
-            postLocalDataSource,
-            postCacheDataSource
+        return GetPostsRepositoryImpl(
+            apiService, ioDispatcher
         )
     }
 
@@ -135,6 +105,7 @@ class DataModule {
     fun providePostDetailLocalDataSource(postDAO: PostDAO): PostDetailLocalDataSource {
         return PostDetailLocalDataSourceImpl(postDAO)
     }
+
     @Provides
     fun providePostDetailCacheDataSource(): PostDetailCacheDataSource {
         return PostDetailCacheDataSourceImpl()

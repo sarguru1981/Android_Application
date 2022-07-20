@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.poc.data.ApiService
 import com.poc.data.mappers.toDomain
-import com.poc.data.network.repository.post.GetPagerPostRepoImpl
 import com.poc.data.room.post.PostDAO
 import com.poc.data.room.post.PostDatabase
 import com.poc.domain.model.post.Owner
@@ -39,11 +38,11 @@ class GetPostsViewModelTest {
         MockitoAnnotations.initMocks(this)
         postDAO = PostDatabase.getInstance(Mockito.mock(Context::class.java)).getPostDAO()
         val fakeGetPostRepository = FakeGetPostRepository(apiService)
-        getPostsUseCase =  GetPostsUseCase(fakeGetPostRepository)
+        getPostsUseCase = GetPostsUseCase(fakeGetPostRepository)
     }
 
     @Test
-    fun getPost_returnsCurrentList(){
+    fun getPost_returnsCurrentList() {
         val posts = mutableListOf<Post>()
         posts.add(
             Post(
@@ -79,10 +78,10 @@ class GetPostsViewModelTest {
             )
         )
 
-        postListViewModel = PostListViewModel(getPostsUseCase, GetPagerPostRepoImpl(apiService), postDAO)
+        postListViewModel = PostListViewModel(getPostsUseCase)
 
         postListViewModel.viewModelScope.launch {
-           whenever(apiService.getPosts().data?.toDomain()).thenReturn(posts)
+            whenever(apiService.getPosts().data?.toDomain()).thenReturn(posts)
         }
 
         Assert.assertNotEquals(PostsState.Success(emptyList()), postListViewModel.postState.value)
