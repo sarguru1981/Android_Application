@@ -1,0 +1,1 @@
+/Users/sarsubra0/Workspace/Android_Workspace/Android_Application/buildSrc/build/classes/kotlin/main/Dependencies$Libs.class:/Users/sarsubra0/Workspace/Android_Workspace/Android_Application/buildSrc/build/classes/kotlin/main/Dependencies$Versions.class:/Users/sarsubra0/Workspace/Android_Workspace/Android_Application/buildSrc/build/classes/kotlin/main/Dependencies.class

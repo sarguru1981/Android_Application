@@ -1,6 +1,6 @@
 # Android-Assignment
 
-Sample application to demonstrate Multi-module Clean MVVM Architecture and usage of Dagger Hilt, Kotlin Coroutines &amp; Flow, Jetpack compose, Room, Retrofit, Paging, Navigation Graph, Unit tests
+Sample application to demonstrate Multi-module Clean MVVM Architecture and usage of Dagger Hilt, Kotlin Coroutines &amp; Flow, Jetpack compose, Room, Retrofit, Paging, Navigation Graph, Unit tests with Centralized the dependency in multi module setup
 
 ## Clean Architecture
 
