@@ -1,53 +1,61 @@
 package com.poc.presentation.post
 
 
-import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.poc.common.Resource
+import com.poc.domain.base.Output
+import com.poc.domain.model.post.Post
+import com.poc.domain.usecase.GetPostListUseCase
 import com.poc.domain.usecase.GetPostsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PostListViewModel @Inject constructor(
-    private val getPostsUseCase: GetPostsUseCase,
+    private val getPostsUseCase: GetPostListUseCase,
 ) : ViewModel() {
 
 
     // Backing property to avoid state updates from other classes
     private val _postState = MutableStateFlow<PostsState>(PostsState.StartState)
+
     // The UI collects from this StateFlow to get its state updates
     val postState: StateFlow<PostsState> = _postState
+
 
     init {
         getPosts()
     }
 
-    private fun getPosts() {
+    fun getPosts() {
         viewModelScope.launch {
-            _postState.value = PostsState.LoadingState
-            // Improperly handled exceptions thrown in coroutines can make your app crash.
-            // Hence caught them in the body of any coroutines created with viewModelScope
-            try {
-                getPostsUseCase()
-                    //The third party library can throw unexpected exceptions. Hence caught here
-                    .catch { exception -> Log.i("PostListViewModel", exception.toString()) }
-                    // Update View with the latest posts
-                    // Writes to the value property of MutableStateFlow,
-                    // adding a new element to the flow and updating all
-                    // of its collectors
-                    .collect {
-                        postList -> _postState.value = PostsState.Success(postList)
-                    }
-            } catch (error: Throwable) {
-                _postState.value = PostsState.Error(error.message.toString())
+            getPostsUseCase.invoke().collect {
+                when (it.status) {
+                    Output.Status.SUCCESS -> _postState.value = PostsState.Success(it.data)
+                    Output.Status.ERROR -> _postState.value = PostsState.Error(it.message.toString())
+                    Output.Status.LOADING -> _postState.value = PostsState.LoadingState
+                }
             }
         }
     }
+
+    /*private fun getPosts() {
+        getPostsUseCase().onEach {
+            when (it) {
+                is Resource.Loading -> _postState.value = PostsState.LoadingState
+                is Resource.Success -> _postState.value = PostsState.Success(it.data)
+                is Resource.Error -> _postState.value = PostsState.Error(it.message.toString())
+            }
+        }.launchIn(viewModelScope)
+    }*/
 }
 
 

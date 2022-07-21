@@ -5,6 +5,6 @@ import com.poc.domain.model.post.Post
 
 
 interface PostCacheDataSource {
-    suspend fun getPostFromCache(): Resource<List<Post>>
-    suspend fun savePostsToCache(posts:Resource<List<Post>>)
+    suspend fun getPostFromCache(): List<Post>
+    suspend fun savePostsToCache(posts: List<Post>)
 }

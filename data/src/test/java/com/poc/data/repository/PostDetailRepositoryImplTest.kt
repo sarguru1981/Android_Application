@@ -3,7 +3,7 @@ package com.poc.data.repository
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.anushka.tmdbclient.data.repository.movie.datasourceImpl.PostDetailRemoteDataSourceImpl
+import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailRemoteDataSourceImpl
 import com.poc.common.Constant
 import com.poc.data.ApiService
 import com.poc.data.mappers.toDomain
@@ -16,10 +16,6 @@ import com.poc.domain.model.post.Post
 import com.poc.domain.repository.GetPostDetailRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -67,7 +63,7 @@ class PostDetailRepositoryImplTest {
         //GIVEN
         val givenPostDetail = getDummyPost()
 
-        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body()?.toDomain())
+        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body())
             .thenReturn(givenPostDetail)
         //WHEN
         val fetchedPostDetail = postDetailRepository.getPostDetails(pathId)
@@ -75,9 +71,6 @@ class PostDetailRepositoryImplTest {
         //THEN
         assert(fetchedPostDetail.id == givenPostDetail.id)
     }
-
-    suspend fun <T> Flow<List<T>>.flattenToList() =
-        flatMapConcat { it.asFlow() }.toList()
 
     @Test
     fun `Given PostDetail When fetchPostDetail returns Error`() = runBlocking {

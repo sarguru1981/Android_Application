@@ -5,7 +5,7 @@ import com.poc.domain.model.post.Post
 
 
 interface PostLocalDataSource {
-  suspend fun getPostFromDB(): Resource<List<Post>>
-  suspend fun savePostToDB(posts: Resource<List<Post>>)
+  suspend fun getPostFromDB(): List<Post>
+  suspend fun savePostToDB(posts: List<Post>)
   suspend fun clearAll()
 }

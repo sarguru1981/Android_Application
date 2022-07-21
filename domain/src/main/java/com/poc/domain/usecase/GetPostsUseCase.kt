@@ -3,16 +3,19 @@ package com.poc.domain.usecase
 import com.poc.common.Resource
 import com.poc.domain.model.post.Post
 import com.poc.domain.repository.GetPostsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class GetPostsUseCase @Inject constructor(private val getPostsRepository: GetPostsRepository) {
 
-    suspend operator fun invoke():  Flow<List<Post>> {
-        return getPostsRepository.getPosts()
+    operator fun invoke(): Flow<Resource<List<Post>>> = flow {
+        emit(Resource.Loading(""))
+        try {
+            val response = getPostsRepository.getPosts()
+            emit(Resource.Success(data = response))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message.toString()))
+        }
     }
 }

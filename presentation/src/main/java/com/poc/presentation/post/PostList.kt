@@ -46,7 +46,7 @@ fun PostListScreen(
             if (postList != null) {
                 LazyColumn {
                     items(postList.count()) {
-                        PostItem(it = postList[it]!!) {
+                        PostItem(it = postList[it]) {
                             navController.navigate("postdetail/${it}")
                         }
                     }

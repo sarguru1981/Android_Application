@@ -13,12 +13,12 @@ import org.junit.runner.Description
 class TestCoroutineRule(val testCoroutineDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()) :
     TestWatcher() {
     override fun starting(description: Description?) {
-        super.starting(description)
+        super.starting(description!!)
         Dispatchers.setMain(testCoroutineDispatcher)
     }
 
     override fun finished(description: Description?) {
-        super.finished(description)
+        super.finished(description!!)
         Dispatchers.resetMain()
         testCoroutineDispatcher.cleanupTestCoroutines()
     }
