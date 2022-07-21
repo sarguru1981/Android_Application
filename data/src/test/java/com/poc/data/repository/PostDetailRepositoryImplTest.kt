@@ -1,20 +1,11 @@
 package com.poc.data.repository
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailRemoteDataSourceImpl
-import com.poc.common.Constant
-import com.poc.data.ApiService
-import com.poc.data.mappers.toDomain
-import com.poc.data.network.repository.postdetail.GetPostDetailRepositoryImpl
-import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailCacheDataSourceImpl
-import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailLocalDataSourceImpl
-import com.poc.data.room.post.PostDatabase
-import com.poc.domain.model.post.Owner
-import com.poc.domain.model.post.Post
-import com.poc.domain.repository.GetPostDetailRepository
-import kotlinx.coroutines.Dispatchers
+import com.poc.data.getDummyPost
+import com.poc.data.network.repository.postdetail.PostDetailRepositoryImpl
+import com.poc.data.network.repository.postdetail.datasource.PostDetailRemoteDatasource
+import com.poc.domain.base.Output
+import com.poc.domain.repository.PostDetailRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -24,8 +15,8 @@ import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.exceptions.base.MockitoException
 import org.mockito.junit.MockitoJUnitRunner
+import retrofit2.Retrofit
 
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
@@ -35,65 +26,40 @@ class PostDetailRepositoryImplTest {
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
     @Mock
-    lateinit var apiService: ApiService
+    lateinit var postRemoteDataSource: PostDetailRemoteDatasource
 
-    private lateinit var postDetailRepository: GetPostDetailRepository
+    @Mock
+    lateinit var retrofit: Retrofit
 
-    val pathId = "60d21b4667d0d8992e610c85"
+    private lateinit var postDetailRepository: PostDetailRepository
+
+    private val pathId = "60d21b4667d0d8992e610c85"
 
     @Before
     fun setUp() {
-        val postDatabase = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            PostDatabase::class.java
-        ).build()
-        val postDAO = postDatabase.getPostDAO()
-        val postDetailRemoteDatasource = PostDetailRemoteDataSourceImpl(apiService, Dispatchers.IO)
-        val postDetailLocalDataSource = PostDetailLocalDataSourceImpl(postDAO)
-        val postDetailCacheDataSource = PostDetailCacheDataSourceImpl()
-        postDetailRepository = GetPostDetailRepositoryImpl(
-            postDetailRemoteDatasource,
-            postDetailLocalDataSource,
-            postDetailCacheDataSource
+        postDetailRepository = PostDetailRepositoryImpl(
+            postRemoteDataSource,
+            retrofit
         )
     }
 
     @Test
     fun `Given PostDetail When fetchPostDetail returns Success`() = runBlocking {
         //GIVEN
-        val givenPostDetail = getDummyPost()
+        val givenPosts = getDummyPost()
+        val givenPostsOutput = Output.success(givenPosts)
+        val inputFlow = listOf(Output.loading(), Output.success(givenPostsOutput))
+        Mockito.`when`(postRemoteDataSource.getPostDetails(pathId)).thenReturn(givenPostsOutput)
 
-        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body())
-            .thenReturn(givenPostDetail)
         //WHEN
-        val fetchedPostDetail = postDetailRepository.getPostDetails(pathId)
+        val outputFlow = postDetailRepository.getPostDetails(pathId)
 
         //THEN
-        assert(fetchedPostDetail.id == givenPostDetail.id)
-    }
-
-    @Test
-    fun `Given PostDetail When fetchPostDetail returns Error`() = runBlocking {
-        //GIVEN
-        val mockitoException = MockitoException("Unknown Error")
-        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId))
-            .thenThrow(mockitoException)
-        //WHEN
-        val fetchedPostDetail = postDetailRepository.getPostDetails(pathId)
-
-        //THEN
-        assert(fetchedPostDetail.id.toInt() == 0)
-    }
-
-    private fun getDummyPost(): Post {
-        return Post(
-            id = "60d21b4667d0d8992e610c85",
-            image = "https://img.dummyapi.io/photo-1564694202779-bc908c327862.jpg",
-            likes = 43,
-            tags = emptyList(),
-            text = "adult Labrador retriever",
-            publishDate = "2020-05-24T14:53:17.598Z",
-            owner = Owner("", "", "", "", "")
-        )
+        outputFlow.collect {
+            when (it.status) {
+                Output.Status.SUCCESS ->
+                    assert(it.data?.id == pathId)
+            }
+        }
     }
 }

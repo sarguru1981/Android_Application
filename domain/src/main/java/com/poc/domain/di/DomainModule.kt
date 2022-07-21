@@ -1,8 +1,8 @@
 package com.poc.domain.di
 
-import com.poc.domain.repository.GetPostsRepository
+import com.poc.domain.repository.PostListRepository
 import com.poc.domain.repository.PostDetailRepository
-import com.poc.domain.usecase.GetPostsUseCase
+import com.poc.domain.usecase.PostListUseCase
 import com.poc.domain.usecase.PostDetailUseCase
 import dagger.Module
 import dagger.Provides
@@ -13,8 +13,8 @@ import dagger.hilt.components.SingletonComponent
 @Module
 object DomainModule {
     @Provides
-    fun provideGetPostsUseCase(getPostsRepository: GetPostsRepository): GetPostsUseCase {
-        return GetPostsUseCase(getPostsRepository)
+    fun provideGetPostsUseCase(getPostsRepository: PostListRepository): PostListUseCase {
+        return PostListUseCase(getPostsRepository)
     }
 
     @Provides

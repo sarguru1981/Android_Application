@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.poc.domain.base.Output
 import com.poc.domain.usecase.PostDetailUseCase
-import com.poc.presentation.post.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,15 +39,4 @@ class PostDetailsViewModel @Inject constructor(
             }
         }
     }
-
-
-   /* fun getPostDetails(id: String) {
-        getPostDetailUseCase(id).onEach {
-            when (it) {
-                is Resource.Loading -> _details.value = PostDetailState.LoadingState
-                is Resource.Success -> _details.value = PostDetailState.Success(it.data)
-                is Resource.Error -> _details.value = PostDetailState.Error(it.message.toString())
-            }
-        }.launchIn(viewModelScope)
-    }*/
 }

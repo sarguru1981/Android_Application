@@ -1,38 +1,22 @@
 package com.poc.data.network.repository.postdetail.datasourceimpl
 
 import com.poc.data.ApiService
-import com.poc.data.mappers.toDomain
+import com.poc.data.network.repository.BaseRemoteDataSource
 import com.poc.data.network.repository.postdetail.datasource.PostDetailRemoteDatasource
-import com.poc.data.network.utils.SafeApiRequest
-import com.poc.domain.model.post.Owner
+import com.poc.domain.base.Output
 import com.poc.domain.model.post.Post
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 class PostDetailRemoteDataSourceImpl @Inject constructor(
-    private val apiService: ApiService,
-    private val ioDispatcher: CoroutineDispatcher
+    private val apiService: ApiService, retrofit: Retrofit
 ) :
-    PostDetailRemoteDatasource, SafeApiRequest() {
+    PostDetailRemoteDatasource, BaseRemoteDataSource(retrofit) {
 
-    // suspend functions for one-shot calls
-    override suspend fun getPostDetails(id: String): Post {
-        // Use the withContext() function from the coroutines library to move the execution of a coroutine to a different thread
-        val response = withContext(ioDispatcher) {
-            safeApiRequest { apiService.getPostDetails(id = id) }
-        }
-
-        val post = Post(
-            id = response.id ?: "",
-            image = response.image ?: "",
-            likes = response.likes ?: 0,
-            owner = response.owner ?: Owner("", "", "", "", ""),
-            publishDate = response.publishDate ?: "",
-            tags = response.tags ?: emptyList(),
-            text = response.text ?: ""
+    override suspend fun getPostDetails(id: String): Output<Post> {
+        return getResponse(
+            request = { apiService.getPostDetails(id = id) },
+            defaultErrorMessage = "Error fetching Post"
         )
-        return post
     }
 }
-

@@ -1,12 +1,12 @@
 package com.poc.data.network.repository.post
 
 import com.poc.data.network.repository.BaseRemoteDataSource
-import com.poc.data.network.repository.post.datasource.GetPostRemoteDatasource
+import com.poc.data.network.repository.post.datasource.PostRemoteDatasource
 import com.poc.data.network.repository.post.datasource.PostCacheDataSource
 import com.poc.data.network.repository.post.datasource.PostLocalDataSource
 import com.poc.domain.base.Output
 import com.poc.domain.model.post.Post
-import com.poc.domain.repository.GetPostListRepository
+import com.poc.domain.repository.PostListRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.flowOn
 import retrofit2.Retrofit
 import javax.inject.Inject
 
-class GetPostListRepositoryImpl @Inject constructor(
-    private val getPostRemoteDatasource: GetPostRemoteDatasource,
+class PostListRepositoryImpl @Inject constructor(
+    private val postRemoteDatasource: PostRemoteDatasource,
     private val getPostLocalDataSource: PostLocalDataSource,
     private val getPostCacheDataSource: PostCacheDataSource,
     retrofit: Retrofit
-) : GetPostListRepository, BaseRemoteDataSource(retrofit) {
+) : PostListRepository, BaseRemoteDataSource(retrofit) {
 
 
     override suspend fun getPosts(): Flow<Output<List<Post>>> {
@@ -29,7 +29,7 @@ class GetPostListRepositoryImpl @Inject constructor(
     private suspend fun getPostsFromRemote(): Flow<Output<List<Post>>> {
         return flow {
             emit(Output.loading())
-            val result = getPostRemoteDatasource.getPosts()
+            val result = postRemoteDatasource.getPosts()
             emit(result)
         }.flowOn(Dispatchers.IO)
     }
