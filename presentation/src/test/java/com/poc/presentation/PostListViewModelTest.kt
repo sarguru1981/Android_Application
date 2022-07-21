@@ -1,7 +1,7 @@
 package com.poc.presentation
 
 import com.poc.domain.base.Output
-import com.poc.domain.usecase.GetPostListUseCase
+import com.poc.domain.usecase.PostListUseCase
 import com.poc.presentation.post.PostListViewModel
 import com.poc.presentation.post.PostsState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,10 +15,10 @@ import org.mockito.junit.MockitoJUnitRunner
 
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
-class GetPostsViewModelTest : BaseViewModelTest() {
+class PostListViewModelTest : BaseViewModelTest() {
 
     @Mock
-    private lateinit var postListUseCase: GetPostListUseCase
+    private lateinit var postListUseCase: PostListUseCase
     private lateinit var postListViewModel: PostListViewModel
 
     @Before

@@ -3,8 +3,8 @@ package com.poc.data.remote
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.poc.data.ApiService
 import com.poc.data.getDummyPosts
-import com.poc.data.network.repository.post.datasource.GetPostRemoteDatasource
-import com.poc.data.network.repository.post.datasourceimpl.GetPostRemoteDataSourceImpl
+import com.poc.data.network.repository.post.datasource.PostRemoteDatasource
+import com.poc.data.network.repository.post.datasourceimpl.PostRemoteDataSourceImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -33,11 +33,11 @@ class PostRepositoryRemoteDataTest {
     @Mock
     lateinit var profService: ApiService
 
-    private lateinit var getPostListRemoteDataSource: GetPostRemoteDatasource
+    private lateinit var getPostListRemoteDataSource: PostRemoteDatasource
 
     @Before
     fun setUp() {
-        getPostListRemoteDataSource = GetPostRemoteDataSourceImpl(profService, retrofit)
+        getPostListRemoteDataSource = PostRemoteDataSourceImpl(profService, retrofit)
     }
 
     @Test

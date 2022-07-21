@@ -1,26 +1,19 @@
 package com.poc.presentation.post
 
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.poc.common.Resource
 import com.poc.domain.base.Output
-import com.poc.domain.model.post.Post
-import com.poc.domain.usecase.GetPostListUseCase
-import com.poc.domain.usecase.GetPostsUseCase
+import com.poc.domain.usecase.PostListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PostListViewModel @Inject constructor(
-    private val getPostsUseCase: GetPostListUseCase,
+    private val getPostsUseCase: PostListUseCase,
 ) : ViewModel() {
 
 
@@ -46,16 +39,6 @@ class PostListViewModel @Inject constructor(
             }
         }
     }
-
-    /*private fun getPosts() {
-        getPostsUseCase().onEach {
-            when (it) {
-                is Resource.Loading -> _postState.value = PostsState.LoadingState
-                is Resource.Success -> _postState.value = PostsState.Success(it.data)
-                is Resource.Error -> _postState.value = PostsState.Error(it.message.toString())
-            }
-        }.launchIn(viewModelScope)
-    }*/
 }
 
 

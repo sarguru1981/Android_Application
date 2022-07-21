@@ -1,20 +1,22 @@
 package com.poc.data.network.repository.post.datasourceimpl
 
 import com.poc.data.ApiService
-import com.poc.data.mappers.toDomain
+import com.poc.data.network.repository.BaseRemoteDataSource
 import com.poc.data.network.repository.post.datasource.PostRemoteDatasource
-import com.poc.data.network.utils.SafeApiRequest
+import com.poc.domain.base.Output
 import com.poc.domain.model.post.Post
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 class PostRemoteDataSourceImpl @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService, retrofit: Retrofit
 ) :
-    PostRemoteDatasource, SafeApiRequest() {
+    PostRemoteDatasource, BaseRemoteDataSource(retrofit) {
 
-    override suspend fun getPosts(): List<Post> {
-        val response = safeApiRequest { apiService.getPosts() }
-        return response.data ?: emptyList()
+
+    override suspend fun getPosts(): Output<List<Post>> {
+        return getListResponse(
+            request = { apiService.getPosts().body()?.data!! }
+        )
     }
 }
-

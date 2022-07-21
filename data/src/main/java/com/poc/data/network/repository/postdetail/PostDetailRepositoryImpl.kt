@@ -1,7 +1,7 @@
 package com.poc.data.network.repository.postdetail
 
 import com.poc.data.network.repository.BaseRemoteDataSource
-import com.poc.data.network.repository.postdetail.datasource.GetPostDetailRemoteDatasource
+import com.poc.data.network.repository.postdetail.datasource.PostDetailRemoteDatasource
 import com.poc.domain.base.Output
 import com.poc.domain.model.post.Post
 import com.poc.domain.repository.PostDetailRepository
@@ -13,7 +13,7 @@ import retrofit2.Retrofit
 import javax.inject.Inject
 
 class PostDetailRepositoryImpl @Inject constructor(
-    private val getPostDetailRemoteDatasource: GetPostDetailRemoteDatasource,
+    private val postDetailRemoteDatasource: PostDetailRemoteDatasource,
     retrofit: Retrofit
 ) : PostDetailRepository, BaseRemoteDataSource(retrofit) {
 
@@ -25,7 +25,7 @@ class PostDetailRepositoryImpl @Inject constructor(
     private suspend fun getPostDetailsFromRemote(id: String): Flow<Output<Post>> {
         return flow {
             emit(Output.loading())
-            val result = getPostDetailRemoteDatasource.getPostDetails(id)
+            val result = postDetailRemoteDatasource.getPostDetails(id)
             emit(result)
         }.flowOn(Dispatchers.IO)
     }
