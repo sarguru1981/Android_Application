@@ -50,17 +50,8 @@ class FakeGetPostRepository @Inject constructor(private val apiService: ApiServi
         )
     }
 
-    override suspend fun getPosts(): Flow<List<Post>> {
-        val posts: Flow<List<Post>> = flow {
-            while (true) {
-                val posts = apiService.getPosts()
-                emit(
-                    posts.data?.toDomain() ?: emptyList()
-                )// Emits the result of the request to the flow
-                delay(5000L) // Suspends the coroutine for some time
-            }
-        }
-        return posts
+    override suspend fun getPosts(): List<Post> {
+        return apiService.getPosts().body()?.data!!
     }
 
 }

@@ -1,20 +1,14 @@
 package com.poc.data.remote
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.anushka.tmdbclient.data.repository.movie.datasourceImpl.PostDetailRemoteDataSourceImpl
 import com.poc.common.Constant
 import com.poc.data.ApiService
-import com.poc.data.mappers.toDomain
-import com.poc.data.network.repository.post.datasourceimpl.PostRemoteDataSourceImpl
+import com.poc.data.getDummyPost
+import com.poc.data.getDummyPosts
 import com.poc.data.network.repository.postdetail.datasource.PostDetailRemoteDatasource
-import com.poc.domain.model.post.Owner
-import com.poc.domain.model.post.Post
+import com.poc.data.network.repository.postdetail.datasourceimpl.PostDetailRemoteDataSourceImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -25,6 +19,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.exceptions.base.MockitoException
 import org.mockito.junit.MockitoJUnitRunner
+import retrofit2.Response
 
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
@@ -51,7 +46,7 @@ class PostDetailRepositoryRemoteDataTest {
         //GIVEN
         val givenPost = getDummyPost()
 
-        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body()?.toDomain())
+        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body())
             .thenReturn(givenPost)
         //WHEN
         val fetchedPost = postDetailRemoteDataSource.getPostDetails(pathId)
@@ -64,24 +59,12 @@ class PostDetailRepositoryRemoteDataTest {
     fun `Given Post When fetchPost returns Error`() = runBlocking {
         //GIVEN
         val mockitoException = MockitoException("Unknown Error")
-        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body()?.toDomain())
+        Mockito.`when`(apiService.getPostDetails(Constant.APP_ID, pathId).body())
             .thenThrow(mockitoException)
         //WHEN
         val fetchedPost = postDetailRemoteDataSource.getPostDetails(pathId)
 
         //THEN
         assert(fetchedPost.id.toInt() == 0)
-    }
-
-    private fun getDummyPost(): Post {
-        return Post(
-            id = "60d21b4667d0d8992e610c85",
-            image = "https://img.dummyapi.io/photo-1564694202779-bc908c327862.jpg",
-            likes = 43,
-            tags = emptyList(),
-            text = "adult Labrador retriever",
-            publishDate = "2020-05-24T14:53:17.598Z",
-            owner = Owner("", "", "", "", "")
-        )
     }
 }

@@ -20,7 +20,7 @@ class GetPostDetailRepositoryImpl @Inject constructor(
         return getPostDetailFromRemote(id)
     }
 
-    suspend fun getPostDetailFromRemote(id: String): Post{
+    private suspend fun getPostDetailFromRemote(id: String): Post{
         lateinit var postItem: Post
         try {
             postItem = postDetailRemoteDatasource.getPostDetails(id)
@@ -31,7 +31,7 @@ class GetPostDetailRepositoryImpl @Inject constructor(
         return postItem
     }
 
-    suspend fun getPostDetailFromDB(id: String): Post {
+    private suspend fun getPostDetailFromDB(id: String): Post {
         lateinit var postItem: Post
         try {
             postItem = postDetailLocalDataSource.getPostDetailFromDB(id)
@@ -48,7 +48,7 @@ class GetPostDetailRepositoryImpl @Inject constructor(
         return postItem
     }
 
-    suspend fun getPostDetailFromCache(id: String): Post {
+    private suspend fun getPostDetailFromCache(id: String): Post {
         lateinit var postItem: Post
         try {
             postItem = postDetailCacheDataSource.getPostDetailFromCache()

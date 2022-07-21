@@ -1,7 +1,10 @@
 package com.poc.domain.usecase
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.poc.domain.base.Output
+import com.poc.domain.getDummyPostList
 import com.poc.domain.getDummyPosts
+import com.poc.domain.repository.GetPostListRepository
 import com.poc.domain.repository.GetPostsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -23,23 +26,23 @@ class GetPostsUseCaseImplTest {
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
     @Mock
-    private lateinit var getPostsRepository: GetPostsRepository
-    private lateinit var getPostsUseCase: GetPostsUseCase
+    private lateinit var getPostsRepository: GetPostListRepository
+    private lateinit var getPostsUseCase: GetPostListUseCase
 
     @Before
     fun setUp() {
-        getPostsUseCase = GetPostsUseCase(getPostsRepository)
+        getPostsUseCase = GetPostListUseCase(getPostsRepository)
     }
 
     @Test
     fun `Given Posts When UseCase fetchPosts returns Success`() = runBlocking {
         //GIVEN
-        val inputFlow = flowOf(getDummyPosts())
+        val inputFlow = flowOf(Output.success(getDummyPostList()))
         Mockito.`when`(getPostsRepository.getPosts()).thenReturn(inputFlow)
         //WHEN
         val output = getPostsUseCase.invoke().toList()
         //THEN
-        assert(output[0].size == 1)
+        assert(output[0].data?.size == 3)
     }
 
 }

@@ -1,4 +1,4 @@
-package com.anushka.tmdbclient.data.repository.movie.datasourceImpl
+package com.poc.data.network.repository.postdetail.datasourceimpl
 
 import com.poc.data.ApiService
 import com.poc.data.mappers.toDomain
@@ -27,7 +27,7 @@ class PostDetailRemoteDataSourceImpl @Inject constructor(
             id = response.id ?: "",
             image = response.image ?: "",
             likes = response.likes ?: 0,
-            owner = response.owner?.toDomain() ?: Owner("", "", "", "", ""),
+            owner = response.owner ?: Owner("", "", "", "", ""),
             publishDate = response.publishDate ?: "",
             tags = response.tags ?: emptyList(),
             text = response.text ?: ""

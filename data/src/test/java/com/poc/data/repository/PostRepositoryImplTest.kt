@@ -1,17 +1,33 @@
 package com.poc.data.repository
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
 import com.poc.data.ApiService
+import com.poc.data.getDummyPostList
+import com.poc.data.getDummyPosts
 import com.poc.data.mappers.toDomain
+import com.poc.data.network.repository.post.GetPostListRepositoryImpl
 import com.poc.data.network.repository.post.GetPostsRepositoryImpl
+import com.poc.data.network.repository.post.datasource.GetPostRemoteDatasource
+import com.poc.data.network.repository.post.datasource.PostCacheDataSource
+import com.poc.data.network.repository.post.datasource.PostLocalDataSource
+import com.poc.data.network.repository.post.datasourceimpl.GetPostRemoteDataSourceImpl
+import com.poc.data.network.repository.post.datasourceimpl.PostCacheDataSourceImpl
+import com.poc.data.network.repository.post.datasourceimpl.PostLocalDataSourceImpl
+import com.poc.data.network.repository.post.datasourceimpl.PostRemoteDataSourceImpl
+import com.poc.data.room.post.PostDAO
+import com.poc.data.room.post.PostDatabase
+import com.poc.domain.base.Output
 import com.poc.domain.model.post.Owner
 import com.poc.domain.model.post.Post
+import com.poc.domain.repository.GetPostListRepository
 import com.poc.domain.repository.GetPostsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -23,6 +39,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.exceptions.base.MockitoException
 import org.mockito.junit.MockitoJUnitRunner
+import retrofit2.Retrofit
 
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
@@ -32,78 +49,42 @@ class PostRepositoryImplTest {
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
     @Mock
-    lateinit var apiService : ApiService
+    lateinit var retrofit: Retrofit
 
-    private lateinit var postsRepository: GetPostsRepository
+    @Mock
+    lateinit var postRemoteDataSource: GetPostRemoteDatasource
 
+    @Mock
+    lateinit var postLocalDataSource: PostLocalDataSource
+
+    @Mock
+    lateinit var postCacheDataSource: PostCacheDataSource
+
+    private lateinit var postsRepository: GetPostListRepository
 
     @Before
     fun setUp() {
-        postsRepository = GetPostsRepositoryImpl(apiService, Dispatchers.IO)
+        postsRepository = GetPostListRepositoryImpl(
+            postRemoteDataSource,
+            postLocalDataSource,
+            postCacheDataSource,
+            retrofit
+        )
     }
 
     @Test
     fun `Given Posts When fetchPosts returns Success`() = runBlocking {
         //GIVEN
-        val givenPosts = getDummyPosts()
+        val givenPosts = getDummyPostList()
+        val givenPostsOutput = Output.success(givenPosts)
+        val inputFlow = listOf(Output.loading(), Output.success(givenPostsOutput))
+        Mockito.`when`(postRemoteDataSource.getPosts()).thenReturn(givenPostsOutput)
 
-        Mockito.`when`(apiService.getPosts().data?.toDomain())
-            .thenReturn(givenPosts)
         //WHEN
-        val fetchedPosts = postsRepository.getPosts()
+        val outputFlow = postsRepository.getPosts().toList()
 
         //THEN
-        val flatPostList: List<Post> = fetchedPosts.flattenToList()
-
-        assert(flatPostList.size == givenPosts.size)
-    }
-
-    suspend fun <T> Flow<List<T>>.flattenToList() =
-        flatMapConcat { it.asFlow() }.toList()
-
-    @Test
-    fun `Given Posts When fetchPosts returns Error`() = runBlocking {
-        //GIVEN
-        val mockitoException = MockitoException("Unknown Error")
-        Mockito.`when`(apiService.getPosts()).thenThrow(mockitoException)
-        //WHEN
-        val fetchedPosts = postsRepository.getPosts()
-        //THEN
-        val flatPostList: List<Post> = fetchedPosts.flattenToList()
-
-        //THEN
-        assert(flatPostList.isEmpty())
-    }
-
-    private fun getDummyPosts(): List<Post> {
-        return listOf(
-            Post(
-                id = "60d21b4667d0d8992e610c85",
-                image = "https://img.dummyapi.io/photo-1564694202779-bc908c327862.jpg",
-                likes = 43,
-                tags = emptyList(),
-                text = "adult Labrador retriever",
-                publishDate = "2020-05-24T14:53:17.598Z",
-                owner = Owner("", "", "", "", "")
-            ),
-            Post(
-                id = "60d21b4967d0d8992e610c90",
-                image = "https://img.dummyapi.io/photo-1510414696678-2415ad8474aa.jpg",
-                likes = 31,
-                tags = emptyList(),
-                text = "ice caves in the wild landscape photo of ice near gray cliff",
-                publishDate = "2020-05-24T07:44:17.738Z",
-                owner = Owner("", "", "", "", "")
-            ),
-            Post(
-                id = "60d21b8667d0d8992e610d3f",
-                image = "https://img.dummyapi.io/photo-1515376721779-7db6951da88d.jpg",
-                likes = 16,
-                tags = emptyList(),
-                text = "@adventure.yuki frozen grass short-coated black dog sitting on snow",
-                publishDate = "2020-05-24T05:44:55.297Z",
-                owner = Owner("", "", "", "", "")
-            )
-        )
+        assert(outputFlow.size == 2)
+        assert(inputFlow[0] == outputFlow[0])
     }
 }

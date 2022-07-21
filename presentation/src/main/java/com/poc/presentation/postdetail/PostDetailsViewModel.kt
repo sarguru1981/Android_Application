@@ -3,18 +3,18 @@ package com.poc.presentation.postdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.poc.common.Resource
-import com.poc.domain.usecase.GetPostDetailUseCase
+import com.poc.domain.base.Output
+import com.poc.domain.usecase.PostDetailUseCase
+import com.poc.presentation.post.PostsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PostDetailsViewModel @Inject constructor(
-    private val getPostDetailUseCase: GetPostDetailUseCase,
+    private val postDetailUseCase: PostDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -28,7 +28,21 @@ class PostDetailsViewModel @Inject constructor(
         }
     }
 
+
     fun getPostDetails(id: String) {
+        viewModelScope.launch {
+            postDetailUseCase.invoke(id).collect {
+                when (it.status) {
+                    Output.Status.SUCCESS -> _details.value = PostDetailState.Success(it.data)
+                    Output.Status.ERROR -> _details.value = PostDetailState.Error(it.message.toString())
+                    Output.Status.LOADING -> _details.value = PostDetailState.LoadingState
+                }
+            }
+        }
+    }
+
+
+   /* fun getPostDetails(id: String) {
         getPostDetailUseCase(id).onEach {
             when (it) {
                 is Resource.Loading -> _details.value = PostDetailState.LoadingState
@@ -36,5 +50,5 @@ class PostDetailsViewModel @Inject constructor(
                 is Resource.Error -> _details.value = PostDetailState.Error(it.message.toString())
             }
         }.launchIn(viewModelScope)
-    }
+    }*/
 }
